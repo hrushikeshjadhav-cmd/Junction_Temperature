@@ -10,14 +10,13 @@
         .card { background: #1c1e20; border: 1px solid #333; border-radius: 8px; }
         input { background: #2a2d30; border: 1px solid #444; color: white; padding: 6px; border-radius: 4px; width: 100%; }
         label { display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 2px; }
-        .highlight { color: #60a5fa; font-weight: bold; }
     </style>
 </head>
 <body class="p-4">
 
     <div class="max-w-6xl mx-auto">
         <header class="mb-6 border-b border-gray-700 pb-2">
-            <h1 class="text-2xl font-bold text-blue-400">Junction Temperature ($T_J$) Reliability Tool</h1>
+            <h1 class="text-2xl font-bold text-blue-400">Junction Temperature Calculator</h1>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -25,16 +24,16 @@
                 <h2 class="text-sm uppercase tracking-widest mb-4 text-gray-500 font-bold">1. Properties & Power</h2>
                 <div class="space-y-3">
                     <div>
-                        <label>Power Dissipation ($P$) [W]</label>
+                        <label>Power Dissipation [W]</label>
                         <input type="number" id="power" value="55" oninput="calculate()">
                     </div>
                     <div class="pt-2 border-t border-gray-700">
-                        <p class="text-xs text-blue-300 mb-2">Gap Pad ($R_{th-TGP}$ Calculation)</p>
-                        <label>Thickness ($t$) [mm]</label>
+                        <p class="text-xs text-blue-300 mb-2">Gap Pad (Rth-TGP Calculation)</p>
+                        <label>Thickness (t) [mm]</label>
                         <input type="number" id="thickness" value="0.508" step="0.001" oninput="calculate()">
-                        <label class="mt-2">Conductivity ($k$) [W/m·K]</label>
+                        <label class="mt-2">Conductivity (k) [W/m·K]</label>
                         <input type="number" id="k_val" value="5" step="0.1" oninput="calculate()">
-                        <label class="mt-2">Area ($A$) [mm²]</label>
+                        <label class="mt-2">Area (A) [mm²]</label>
                         <input type="number" id="area" value="128.1" step="0.1" oninput="calculate()">
                     </div>
                 </div>
@@ -44,15 +43,15 @@
                 <h2 class="text-sm uppercase tracking-widest mb-4 text-gray-500 font-bold">2. Resistance Network</h2>
                 <div class="space-y-3">
                     <div>
-                        <label>$R_{th-JC}$ (Junction-to-Case)</label>
+                        <label>Rth-JC (Junction-to-Case)</label>
                         <input type="number" id="r_jc" value="0.19" step="0.01" oninput="calculate()">
                     </div>
                     <div>
-                        <label>$R_{th-CS}$ (Case-to-Sink / CCS)</label>
+                        <label>Rth-CS (Case-to-Sink / CCS)</label>
                         <input type="number" id="r_cs" value="0.1" step="0.01" oninput="calculate()">
                     </div>
                     <div>
-                        <label>$R_{th-SA}$ (Sink-to-Ambient)</label>
+                        <label>Rth-SA (Sink-to-Ambient)</label>
                         <input type="number" id="r_sa" value="0.5" step="0.01" oninput="calculate()">
                     </div>
                 </div>
@@ -62,21 +61,21 @@
                 <h2 class="text-sm uppercase tracking-widest mb-4 text-green-500 font-bold">3. Calculation Outputs</h2>
                 
                 <div class="space-y-4">
-                    <div class="p-3 bg-gray-900 rounded">
-                        <label>Ambient Temp ($T_A$) [°C]</label>
+                    <div class="p-3 bg-gray-900 rounded border border-gray-800">
+                        <label>Ambient Temp (TA) [°C]</label>
                         <input type="number" id="t_ambient" value="55" oninput="calculate()">
-                        <label class="mt-2 text-yellow-500 font-semibold">Cold Plate Surface Temp ($T_S$) [°C]</label>
+                        <label class="mt-2 text-yellow-500 font-semibold">Cold Plate Surface Temp (TS) [°C]</label>
                         <input type="number" id="t_surface" value="77.5" step="0.1" placeholder="Leave blank to use Ambient" oninput="calculate()">
                         <p class="text-[10px] text-gray-500 mt-1">*If Cold Plate is empty, calculation defaults to Ambient path.</p>
                     </div>
 
                     <div class="border-t border-gray-700 pt-3">
-                        <div class="flex justify-between text-xs"><span>Calculated $R_{th-TGP}$:</span><span id="out-rtgp" class="font-mono">--</span></div>
-                        <div class="flex justify-between text-xs mt-1"><span>Selected Case $\Sigma R_{th}$:</span><span id="out-rtotal" class="font-mono">--</span></div>
+                        <div class="flex justify-between text-xs"><span>Calculated Rth-TGP:</span><span id="out-rtgp" class="font-mono text-blue-400">--</span></div>
+                        <div class="flex justify-between text-xs mt-1"><span>Total Thermal Resistance:</span><span id="out-rtotal" class="font-mono text-blue-400">--</span></div>
                     </div>
 
                     <div class="text-center bg-blue-900/20 p-4 rounded border border-blue-500/30">
-                        <span class="text-xs text-blue-400 block mb-1">Final Junction Temp ($T_J$)</span>
+                        <span class="text-xs text-blue-400 block mb-1">Final Junction Temp (TJ)</span>
                         <span id="out-tj" class="text-4xl font-black">-- °C</span>
                     </div>
                 </div>
@@ -102,7 +101,7 @@
             const k = parseFloat(document.getElementById('k_val').value) || 0;
             const A_mm2 = parseFloat(document.getElementById('area').value) || 0;
 
-            // Rth_TGP = thickness(m) / (k * area(m^2))
+            // Rth-TGP = thickness(m) / (k * area(m^2))
             let Rtgp = 0;
             if (k > 0 && A_mm2 > 0) {
                 Rtgp = (t_mm / 1000) / (k * (A_mm2 / 1000000));
@@ -113,13 +112,13 @@
 
             // Scenario Logic
             if (Ts_val === "" || isNaN(Ts)) {
-                // CASE 1: Cold Plate not given. Path: Junction -> Ambient (Rth_JA)
-                // Rth_JA = Rjc + Rcs + Rsa (Note: Rtgp usually replaces Rcs in direct contact, 
-                // but here we sum full path to Ambient as requested)
+                // CASE 1: Cold Plate not given. Path: Junction -> Ambient
+                // Total Resistance = Rjc + Rtgp + Rsa
                 effectiveR = Rjc + Rtgp + Rsa; 
                 finalTj = Ta + (P * effectiveR);
             } else {
-                // CASE 2: Cold Plate given. Path: Junction -> Surface (Rth_JS)
+                // CASE 2: Cold Plate given. Path: Junction -> Surface
+                // Total Resistance = Rjc + Rtgp
                 effectiveR = Rjc + Rtgp;
                 finalTj = Ts + (P * effectiveR);
             }

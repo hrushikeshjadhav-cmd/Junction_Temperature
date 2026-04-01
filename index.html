@@ -3,104 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Reliability Calculator</title>
+    <title>Advanced Thermal Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0f1111; color: white; font-family: 'Inter', sans-serif; }
         .card { background: #1c1e20; border: 1px solid #333; border-radius: 8px; }
-        input { background: #2a2d30; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; }
-        .danger { color: #ff4d4d; font-weight: bold; }
+        input { background: #2a2d30; border: 1px solid #444; color: white; padding: 6px 10px; border-radius: 4px; width: 100%; font-size: 0.9rem; }
+        label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px; }
+        .result-box { background: #111; border: 1px dashed #444; padding: 10px; border-radius: 4px; }
     </style>
 </head>
-<body class="p-8">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <header class="mb-8 border-b border-gray-700 pb-4">
-            <h1 class="text-3xl font-bold">Junction Temperature ($T_J$) Calculator</h1>
-            <p class="text-gray-400">Reliability Engineering Tool for Thermal Validation</p>
+            <h1 class="text-3xl font-bold text-blue-400">Junction Temperature ($T_J$) Analysis</h1>
+            <p class="text-gray-400">Derived from Material Properties & Cold Plate Surface Temp</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="card p-6">
-                <h2 class="text-xl mb-4 border-b border-gray-600 pb-2 text-blue-400">Inputs</h2>
-                
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-600 pb-2">1. Operating Specs</h2>
                 <div class="space-y-4">
                     <div>
-                        <label>Power Dissipation ($P$) in Watts</label>
-                        <input type="number" id="power" value="10" oninput="calculate()">
+                        <label>Power per FET ($P$) [W]</label>
+                        <input type="number" id="power" value="55" step="0.1" oninput="calculate()">
                     </div>
                     <div>
-                        <label>Ambient Temp ($T_A$) in °C</label>
-                        <input type="number" id="t_ambient" value="25" oninput="calculate()">
+                        <label>Cold Plate Surface Temp ($T_s$) [°C]</label>
+                        <input type="number" id="t_surface" value="77.5" step="0.1" oninput="calculate()">
                     </div>
                     <div>
-                        <label>$\theta_{JC}$ (Junction-to-Case) °C/W</label>
-                        <input type="number" id="r_jc" value="1.2" oninput="calculate()">
-                    </div>
-                    <div>
-                        <label>$\theta_{CS}$ (Case-to-Sink) °C/W</label>
-                        <input type="number" id="r_cs" value="0.5" oninput="calculate()">
-                    </div>
-                    <div>
-                        <label>$\theta_{SA}$ (Sink-to-Ambient) °C/W</label>
-                        <input type="number" id="r_sa" value="4.0" oninput="calculate()">
+                        <label>$R_{th-JC}$ (Junction-to-Case) [K/W]</label>
+                        <input type="number" id="r_jc" value="0.19" step="0.01" oninput="calculate()">
                     </div>
                 </div>
             </div>
 
-            <div class="card p-6 flex flex-col justify-center items-center text-center">
-                <h2 class="text-xl mb-4 text-green-400">Calculated $T_J$</h2>
-                <div id="result-display" class="text-6xl font-black mb-2">-- °C</div>
-                <p id="status-msg" class="text-gray-400 italic">Enter values to calculate</p>
-                
-                <div class="mt-8 w-full bg-gray-700 h-4 rounded-full overflow-hidden">
-                    <div id="temp-bar" class="bg-green-500 h-full transition-all duration-500" style="width: 0%"></div>
+            <div class="card p-6">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-600 pb-2">2. Thermal Gap Pad (TGP)</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label>Thickness ($t$) [mm]</label>
+                        <input type="number" id="thickness" value="0.508" step="0.001" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label>Conductivity ($k$) [W/m·K]</label>
+                        <input type="number" id="k_val" value="5" step="0.1" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label>Dissipation Area ($A$) [mm²]</label>
+                        <input type="number" id="area" value="128.1" step="0.1" oninput="calculate()">
+                    </div>
                 </div>
-                <p class="text-xs mt-2 text-gray-500">Thermal Limit: 125°C</p>
+            </div>
+
+            <div class="card p-6 bg-slate-900">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-600 pb-2 text-green-400">3. Calculated Data</h2>
+                <div class="space-y-6">
+                    <div class="result-box">
+                        <label>Calculated $R_{th-TGP}$</label>
+                        <div id="res-tgp" class="text-2xl font-mono">-- K/W</div>
+                    </div>
+                    <div class="result-box">
+                        <label>Total Thermal Resistance ($\Sigma R_{th}$)</label>
+                        <div id="res-total" class="text-2xl font-mono">-- K/W</div>
+                    </div>
+                    <div class="text-center py-4">
+                        <label class="text-lg text-white">Final Junction Temp ($T_J$)</label>
+                        <div id="res-tj" class="text-5xl font-black text-white">-- °C</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         function calculate() {
-            // Get values from DOM
+            // Inputs
             const P = parseFloat(document.getElementById('power').value) || 0;
-            const Ta = parseFloat(document.getElementById('t_ambient').value) || 0;
+            const Ts = parseFloat(document.getElementById('t_surface').value) || 0;
             const Rjc = parseFloat(document.getElementById('r_jc').value) || 0;
-            const Rcs = parseFloat(document.getElementById('r_cs').value) || 0;
-            const Rsa = parseFloat(document.getElementById('r_sa').value) || 0;
-
-            // Physics: Tj = Ta + P * (Rjc + Rcs + Rsa)
-            const totalR = Rjc + Rcs + Rsa;
-            const Tj = Ta + (P * totalR);
-
-            // Update Display
-            const display = document.getElementById('result-display');
-            const msg = document.getElementById('status-msg');
-            const bar = document.getElementById('temp-bar');
             
-            display.innerText = Tj.toFixed(1) + " °C";
+            // TGP Physics Inputs
+            const t_mm = parseFloat(document.getElementById('thickness').value) || 0;
+            const k = parseFloat(document.getElementById('k_val').value) || 0;
+            const A_mm2 = parseFloat(document.getElementById('area').value) || 0;
 
-            // Reliability Logic: Safety Margins
-            const percentage = Math.min((Tj / 125) * 100, 100);
-            bar.style.width = percentage + "%";
+            // Convert units to SI (m and m^2)
+            const t_m = t_mm / 1000;
+            const A_m2 = A_mm2 / 1000000;
 
-            if (Tj > 125) {
-                display.className = "text-6xl font-black mb-2 text-red-500";
-                msg.innerHTML = "⚠️ CRITICAL: Exceeds silicon limit!";
-                bar.className = "bg-red-600 h-full transition-all duration-500";
-            } else if (Tj > 100) {
-                display.className = "text-6xl font-black mb-2 text-yellow-500";
-                msg.innerHTML = "Warning: Operating near derating limit.";
-                bar.className = "bg-yellow-500 h-full transition-all duration-500";
-            } else {
-                display.className = "text-6xl font-black mb-2 text-green-500";
-                msg.innerHTML = "Safe Operating Area";
-                bar.className = "bg-green-500 h-full transition-all duration-500";
+            // Calculate Rth-TGP = t / (k * A)
+            let Rtgp = 0;
+            if (k > 0 && A_m2 > 0) {
+                Rtgp = t_m / (k * A_m2);
             }
+
+            const Rtotal = Rjc + Rtgp;
+            
+            // Tj = Ts + (P * Rtotal)
+            // Note: We use Ts (Surface) because the heat flows from J -> C -> TGP -> Surface
+            const Tj = Ts + (P * Rtotal);
+
+            // Update UI
+            document.getElementById('res-tgp').innerText = Rtgp.toFixed(4) + " K/W";
+            document.getElementById('res-total').innerText = Rtotal.toFixed(4) + " K/W";
+            document.getElementById('res-tj').innerText = Tj.toFixed(2) + " °C";
         }
 
-        // Run once on load
+        // Initialize
         window.onload = calculate;
     </script>
 </body>

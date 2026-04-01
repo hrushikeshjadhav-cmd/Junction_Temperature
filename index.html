@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electronics Junction Temperature</title>
+    <title>Electronics Junction Temperature & Network</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #0f1111; color: white; font-family: 'Inter', sans-serif; }
         .card { background: #1c1e20; border: 1px solid #333; border-radius: 12px; }
-        input { 
+        input, select { 
             background: #2a2d30; 
             border: 1px solid #444; 
             color: white; 
@@ -18,46 +18,91 @@
             width: 100%; 
             font-size: 1.1rem;
         }
-        input:focus { border-color: #60a5fa; outline: none; background: #32363a; }
+        input:focus, select:focus { border-color: #60a5fa; outline: none; background: #32363a; }
         label { 
             display: block; 
-            font-size: 1rem; 
-            color: #d1d5db; 
-            margin-bottom: 8px; 
-            font-weight: 500;
+            font-size: 0.9rem; 
+            color: #9ca3af; 
+            margin-bottom: 6px; 
+            font-weight: 600;
+            text-transform: uppercase;
         }
+        .node { width: 12px; height: 12px; border-radius: 50%; background: #60a5fa; position: relative; }
+        .resistor { height: 2px; flex-grow: 1; background: repeating-linear-gradient(90deg, #444, #444 5px, transparent 5px, transparent 10px); margin: 0 10px; position: relative; }
+        .res-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; color: #60a5fa; }
     </style>
 </head>
 <body class="p-6 md:p-12">
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10 border-b border-gray-700 pb-6">
-            <h1 class="text-4xl font-extrabold text-blue-400 tracking-tight">Electronics Junction Temperature</h1>
+        <header class="mb-10 border-b border-gray-700 pb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-4xl font-extrabold text-blue-400 tracking-tight">Thermal Network Calculator</h1>
+                <p class="text-gray-400 mt-2">Junction Temperature (T<sub>J</sub>) Analysis</p>
+            </div>
+            <div class="text-right">
+                <label>Target T<sub>J,max</sub> [°C]</label>
+                <input type="number" id="tj_max" value="125" class="w-24 text-center" oninput="calculate()">
+            </div>
         </header>
+
+        <div class="card p-6 mb-8 bg-black/40">
+            <h2 class="text-xs uppercase tracking-widest mb-8 text-gray-500 font-bold">Equivalent Thermal Circuit</h2>
+            <div class="flex items-center justify-between px-4">
+                <div class="flex flex-col items-center">
+                    <div class="node bg-red-500"></div>
+                    <span class="text-[10px] mt-2">T<sub>J</sub></span>
+                </div>
+                <div class="resistor"><span class="res-label">R<sub>θJC</sub></span></div>
+                <div class="flex flex-col items-center">
+                    <div class="node bg-orange-400"></div>
+                    <span class="text-[10px] mt-2">T<sub>C</sub></span>
+                </div>
+                <div class="resistor"><span class="res-label" id="label-tim">R<sub>θ-TIM</sub></span></div>
+                <div class="flex flex-col items-center">
+                    <div class="node bg-yellow-400"></div>
+                    <span class="text-[10px] mt-2">T<sub>S</sub></span>
+                </div>
+                <div class="resistor" id="ambient-resistor"><span class="res-label">R<sub>θSA</sub></span></div>
+                <div class="flex flex-col items-center" id="ambient-node">
+                    <div class="node bg-blue-400"></div>
+                    <span class="text-[10px] mt-2">T<sub>A</sub></span>
+                </div>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div class="card p-8">
-                <h2 class="text-lg uppercase tracking-widest mb-6 text-gray-500 font-bold border-b border-gray-700 pb-2">1. Physics & Power</h2>
+                <h2 class="text-lg uppercase tracking-widest mb-6 text-gray-500 font-bold border-b border-gray-700 pb-2">1. System Inputs</h2>
                 <div class="space-y-6">
+                    <div>
+                        <label>Calculation Path</label>
+                        <select id="calc_mode" onchange="toggleMode()">
+                            <option value="ambient">To Ambient (Air Cooled)</option>
+                            <option value="sink">To Cold Plate (Liquid/Surface)</option>
+                        </select>
+                    </div>
                     <div>
                         <label>Power Dissipation (P) [W]</label>
                         <input type="number" id="power" value="55" oninput="calculate()">
                     </div>
                     <div class="pt-6 border-t border-gray-700">
-                        <p class="text-sm text-blue-400 font-bold mb-4 uppercase">Gap Pad (Rth-TGP Calculation)</p>
+                        <p class="text-sm text-blue-400 font-bold mb-4 uppercase italic">Thermal Interface (TIM/Gap Pad)</p>
                         <div class="space-y-4">
-                            <div>
-                                <label>Thickness (t) [mm]</label>
-                                <input type="number" id="thickness" value="0.508" step="0.001" oninput="calculate()">
-                            </div>
-                            <div>
-                                <label>Conductivity (k) [W/m·K]</label>
-                                <input type="number" id="k_val" value="5" step="0.1" oninput="calculate()">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label>Thick. [mm]</label>
+                                    <input type="number" id="thickness" value="0.5" step="0.01" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label>Cond. [W/mK]</label>
+                                    <input type="number" id="k_val" value="5.0" step="0.1" oninput="calculate()">
+                                </div>
                             </div>
                             <div>
                                 <label>Area (A) [mm²]</label>
-                                <input type="number" id="area" value="128.1" step="0.1" oninput="calculate()">
+                                <input type="number" id="area" value="128" step="1" oninput="calculate()">
                             </div>
                         </div>
                     </div>
@@ -65,53 +110,61 @@
             </div>
 
             <div class="card p-8">
-                <h2 class="text-lg uppercase tracking-widest mb-6 text-gray-500 font-bold border-b border-gray-700 pb-2">2. Resistance Network</h2>
+                <h2 class="text-lg uppercase tracking-widest mb-6 text-gray-500 font-bold border-b border-gray-700 pb-2">2. Network Nodes</h2>
                 <div class="space-y-6">
                     <div>
-                        <label>Rth-JC (Junction-to-Case)</label>
+                        <label>R<sub>θJC</sub> (Junc-to-Case)</label>
                         <input type="number" id="r_jc" value="0.19" step="0.01" oninput="calculate()">
                     </div>
-                    <div>
-                        <label>Rth-CS (Case-to-Sink / CCS)</label>
-                        <input type="number" id="r_cs" value="0.1" step="0.01" oninput="calculate()">
-                    </div>
-                    <div>
-                        <label>Rth-SA (Sink-to-Ambient)</label>
+                    
+                    <div id="sa_container">
+                        <label>R<sub>θSA</sub> (Sink-to-Ambient)</label>
                         <input type="number" id="r_sa" value="0.5" step="0.01" oninput="calculate()">
+                        <p class="text-[10px] text-gray-500 mt-2">Represents heatsink performance in air.</p>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-700">
+                        <label class="text-white">Reference Temperature [°C]</label>
+                        <div id="temp_ta_box">
+                            <label class="normal-case text-blue-300">Ambient Air (T<sub>A</sub>)</label>
+                            <input type="number" id="t_ambient" value="50" oninput="calculate()">
+                        </div>
+                        <div id="temp_ts_box" class="hidden">
+                            <label class="normal-case text-yellow-300">Cold Plate Surface (T<sub>S</sub>)</label>
+                            <input type="number" id="t_surface" value="75" oninput="calculate()">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-8 bg-black border-blue-900/50">
-                <h2 class="text-lg uppercase tracking-widest mb-6 text-green-500 font-bold border-b border-green-900/30 pb-2">3. Outputs</h2>
-                
-                <div class="space-y-8">
-                    <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
-                        <div class="mb-6">
-                            <label class="text-white">Ambient Temp (TA) [°C]</label>
-                            <input type="number" id="t_ambient" value="55" oninput="calculate()">
+            <div class="card p-8 bg-black border-blue-900/50 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg uppercase tracking-widest mb-6 text-green-500 font-bold border-b border-green-900/30 pb-2">3. Analysis</h2>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-lg">
+                            <span class="text-gray-400 text-sm">R<sub>θ-TIM</sub> (Calc)</span>
+                            <span id="out-rtim" class="font-mono text-blue-400">--</span>
                         </div>
-                        <div>
-                            <label class="text-yellow-500 font-bold">Cold Plate Surface Temp (TS) [°C]</label>
-                            <input type="number" id="t_surface" value="77.5" step="0.1" placeholder="Empty = Use Ambient" oninput="calculate()">
-                            <p class="text-xs text-gray-500 mt-3 italic">*If Cold Plate is empty, calculation defaults to Ambient path.</p>
+                        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-lg">
+                            <span class="text-gray-400 text-sm">Total ΣR<sub>θ</sub></span>
+                            <span id="out-rtotal" class="font-mono text-blue-400">--</span>
                         </div>
-                    </div>
-
-                    <div class="border-t border-gray-800 pt-6 space-y-3">
-                        <div class="flex justify-between items-center text-sm md:text-base">
-                            <span class="text-gray-400">Calculated Rth-TGP:</span>
-                            <span id="out-rtgp" class="font-mono text-blue-400 font-bold text-lg">--</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm md:text-base">
-                            <span class="text-gray-400">Selected Case Total Resistance:</span>
-                            <span id="out-rtotal" class="font-mono text-blue-400 font-bold text-lg">--</span>
+                        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-lg">
+                            <span class="text-gray-400 text-sm">Rise (ΔT)</span>
+                            <span id="out-dt" class="font-mono text-orange-400">--</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="text-center bg-blue-900/20 p-8 rounded-2xl border border-blue-500/30">
-                        <span class="text-sm text-blue-400 uppercase tracking-widest font-bold block mb-2">Final Junction Temp (TJ)</span>
-                        <span id="out-tj" class="text-6xl font-black text-white tracking-tighter">-- °C</span>
+                <div class="text-center">
+                    <div id="status-badge" class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-4 bg-green-500/20 text-green-500 border border-green-500/50">
+                        Thermal Safe
+                    </div>
+                    <span class="text-xs text-blue-400 uppercase tracking-widest font-bold block mb-1">Junction Temp (T<sub>J</sub>)</span>
+                    <span id="out-tj" class="text-7xl font-black text-white tracking-tighter block mb-2">--</span>
+                    <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden mt-4">
+                        <div id="temp-bar" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -119,39 +172,90 @@
     </div>
 
     <script>
-        function calculate() {
-            const P = parseFloat(document.getElementById('power').value) || 0;
-            const Ta = parseFloat(document.getElementById('t_ambient').value) || 0;
-            const Ts_val = document.getElementById('t_surface').value;
-            const Ts = parseFloat(Ts_val);
+        function toggleMode() {
+            const mode = document.getElementById('calc_mode').value;
+            const saContainer = document.getElementById('sa_container');
+            const ambientRes = document.getElementById('ambient-resistor');
+            const ambientNode = document.getElementById('ambient-node');
+            const taBox = document.getElementById('temp_ta_box');
+            const tsBox = document.getElementById('temp_ts_box');
 
-            const Rjc = parseFloat(document.getElementById('r_jc').value) || 0;
-            const Rcs = parseFloat(document.getElementById('r_cs').value) || 0;
-            const Rsa = parseFloat(document.getElementById('r_sa').value) || 0;
-
-            const t_mm = parseFloat(document.getElementById('thickness').value) || 0;
-            const k = parseFloat(document.getElementById('k_val').value) || 0;
-            const A_mm2 = parseFloat(document.getElementById('area').value) || 0;
-
-            let Rtgp = 0;
-            if (k > 0 && A_mm2 > 0) {
-                Rtgp = (t_mm / 1000) / (k * (A_mm2 / 1000000));
-            }
-
-            let finalTj = 0;
-            let effectiveR = 0;
-
-            if (Ts_val === "" || isNaN(Ts)) {
-                effectiveR = Rjc + Rtgp + Rsa; 
-                finalTj = Ta + (P * effectiveR);
+            if (mode === 'ambient') {
+                saContainer.classList.remove('hidden');
+                ambientRes.classList.remove('invisible');
+                ambientNode.classList.remove('invisible');
+                taBox.classList.remove('hidden');
+                tsBox.classList.add('hidden');
             } else {
-                effectiveR = Rjc + Rtgp;
-                finalTj = Ts + (P * effectiveR);
+                saContainer.classList.add('hidden');
+                ambientRes.classList.add('invisible');
+                ambientNode.classList.add('invisible');
+                taBox.classList.add('hidden');
+                tsBox.classList.remove('hidden');
+            }
+            calculate();
+        }
+
+        function calculate() {
+            // Inputs
+            const mode = document.getElementById('calc_mode').value;
+            const P = parseFloat(document.getElementById('power').value) || 0;
+            const TjMax = parseFloat(document.getElementById('tj_max').value) || 125;
+            
+            const Rjc = parseFloat(document.getElementById('r_jc').value) || 0;
+            const Rsa = parseFloat(document.getElementById('r_sa').value) || 0;
+            
+            const thick = parseFloat(document.getElementById('thickness').value) || 0;
+            const k = parseFloat(document.getElementById('k_val').value) || 0;
+            const area = parseFloat(document.getElementById('area').value) || 0;
+
+            // R-TIM Calculation (L / kA)
+            let Rtim = 0;
+            if (k > 0 && area > 0) {
+                Rtim = (thick / 1000) / (k * (area / 1000000));
             }
 
-            document.getElementById('out-rtgp').innerText = Rtgp.toFixed(4) + " K/W";
-            document.getElementById('out-rtotal').innerText = effectiveR.toFixed(4) + " K/W";
-            document.getElementById('out-tj').innerText = finalTj.toFixed(2) + " °C";
+            // Path Calculation
+            let totalR = 0;
+            let refTemp = 0;
+
+            if (mode === 'ambient') {
+                totalR = Rjc + Rtim + Rsa;
+                refTemp = parseFloat(document.getElementById('t_ambient').value) || 0;
+            } else {
+                totalR = Rjc + Rtim;
+                refTemp = parseFloat(document.getElementById('t_surface').value) || 0;
+            }
+
+            const deltaT = P * totalR;
+            const finalTj = refTemp + deltaT;
+
+            // Update UI
+            document.getElementById('out-rtim').innerText = Rtim.toFixed(3) + " K/W";
+            document.getElementById('out-rtotal').innerText = totalR.toFixed(3) + " K/W";
+            document.getElementById('out-dt').innerText = deltaT.toFixed(1) + " °C";
+            document.getElementById('out-tj').innerText = finalTj.toFixed(1) + "°";
+
+            // Progress bar and Status
+            const percentage = Math.min((finalTj / TjMax) * 100, 100);
+            const bar = document.getElementById('temp-bar');
+            const badge = document.getElementById('status-badge');
+
+            bar.style.width = percentage + "%";
+            
+            if (finalTj > TjMax) {
+                bar.style.backgroundColor = "#ef4444";
+                badge.innerText = "OVERHEAT CRITICAL";
+                badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-4 bg-red-500/20 text-red-500 border border-red-500/50";
+            } else if (finalTj > TjMax * 0.85) {
+                bar.style.backgroundColor = "#f59e0b";
+                badge.innerText = "WARNING: HIGH TEMP";
+                badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-4 bg-yellow-500/20 text-yellow-500 border border-yellow-500/50";
+            } else {
+                bar.style.backgroundColor = "#3b82f6";
+                badge.innerText = "Thermal Safe";
+                badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-4 bg-green-500/20 text-green-500 border border-green-500/50";
+            }
         }
 
         window.onload = calculate;

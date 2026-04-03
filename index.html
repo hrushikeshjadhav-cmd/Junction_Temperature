@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harbinger Thermal Network</title>
+    <title>Junction Temperature Calculator - Harbinger Thermal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #0f1111; color: white; font-family: 'Inter', sans-serif; }
         .card { background: #1c1e20; border: 1px solid #333; border-radius: 16px; }
         
-        /* Input & Select Styling */
         input, select { 
             background: #2a2d30; 
             border: 2px solid #444; 
@@ -33,21 +32,6 @@
             letter-spacing: 0.05em;
         }
 
-        /* Logo Styling - Removes White Background */
-        .logo-wrapper {
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .logo-img {
-            height: 80px;
-            /* This blend mode removes the white background from the PNG */
-            mix-blend-mode: screen; 
-            filter: brightness(1.2) drop-shadow(0 0 15px rgba(96, 165, 250, 0.4));
-        }
-
-        /* Circuit Components */
         .node { width: 24px; height: 24px; border-radius: 50%; background: #60a5fa; position: relative; }
         .resistor { height: 4px; flex-grow: 1; background: repeating-linear-gradient(90deg, #444, #444 8px, transparent 8px, transparent 16px); margin: 0 15px; position: relative; }
         .res-label { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-size: 13px; font-weight: 900; white-space: nowrap; color: #60a5fa; text-transform: uppercase; }
@@ -57,15 +41,10 @@
 <body class="p-6 md:p-12">
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10 border-b-2 border-gray-700 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div class="flex items-center gap-6">
-                <div class="logo-wrapper">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABPCAYAAACuY6m/AAAACXBIWXMAAAsTAAALEwEAmpwYAAADXklEQVR4nO2cwW7TQBCG/7XjBEhI9UuAhBAnHvoA3HHoA8A9T8An6Al6m/YEPAnH9An6ANxz6AOEHicSBySIVFES6pAnW09rO8m6u96srdf2/6SybG9mZ77Znd2ZNSmKAgDAmN0AgH885S8p0YVOfOInX9U/O/GVn/jE9/93V/8m7GfW6+Zp/V+9R68B6OQ3/T75Tv76+Tf93PrdtP6Pfv867E96fS+v46ffxZ989+YfPvGTr+pXf798r80f/P16uK79v7W8v5n293r9H6+rY6+rX/v79XfP19U0/U7t3rX+9/p868u8vpfX8dPv4k++e/MPn/jJV/Wrv1++1+YP/n49XNd+A377YqfAnuT6mYJ8Yj058p0mX68p2IAnK9gO2AnInZfN64I78Zmv6tfrz/K96NfL96I7D9+n9D9e/9Prv3p99fW9fD9eX3p99fUW9+X1vd78DveP3p7Zf/69fJ82r6v5566373X7Dvdz1v7r9X+8rk7rX9v79XfP19U0/U7t3rX+9/p868u8vpfX8dPv4k++e/MPn/jJV/Wrv1++1+YP/n49XNd+677S/+R70Z2n70f6L30/0n/p+5n9K/8/fD/S/zP/9/fL9zL/9/fL/9L/M/vP6v/0+6n+L6+vvu7p9S/9v6r/0+8/u776uun11Zf/uv9Pffm75XvRnf8D/O89eUv6V/9+Wf9976v+Z6e/u6v/vU7fI9/5X+n7kf6Xvt/r+5n97/X51pd5fS+v46ffxZ989+YfPvGTr+pXf798r80f/P16uK79v98pS3d+9TMF+cR6cuQ7Tb5eU7AB7YCc7ID0/U5+0++T7+Svn3/Tz63fTev/6Pevw/6k1/fyOn76XfzJd2/+4RM/+ap+9ffL99r8wd+vh+va/zI0y9MUn9pPU3SaeUr/9Gf7S/9Nf5p/P8f368u73r7D/Zy1/3r9H6+r0/rX9n793fN1NU2/U7t3rf+9Pt/6Mq/v5XX89Lv4k+/e/MMnfvJV/ervl++1+YO/Xw/XtX89+X3N+YtP/NRT99MTn/jJV/XP/uVn/78Ofv86nHzf9/I6fvpX79HrvXoNvX76Xfz6+Xft7vX/ev0fr6tj797X76nfX1+v6df/uv938+m/vC6m9T/t6r7u30u/u679pT+/66+n74Uxu8FfG77XfH/2Jz0AAAAASUVORK5CYII=" alt="Harbinger Logo" class="logo-img">
-                </div>
-                <div>
-                    <h1 class="text-6xl font-black text-yellow-500 tracking-tighter uppercase leading-none">Harbinger Thermal Network</h1>
-                    <p class="text-2xl text-gray-400 font-medium mt-2">Junction Temperature (T<sub>J</sub>) Analysis</p>
-                </div>
+        <header class="mb-10 border-b-2 border-gray-700 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div>
+                <h1 class="text-6xl font-black text-yellow-500 tracking-tighter uppercase">Harbinger Thermal Network</h1>
+                <p class="text-2xl text-gray-400 font-medium mt-2">Junction Temperature (T<sub>J</sub>) Analysis</p>
             </div>
             <div class="text-right w-full md:w-auto">
                 <label>Limit T<sub>J,max</sub> [°C]</label>
@@ -99,6 +78,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
             <div class="card p-8">
                 <h2 class="text-2xl font-black text-white mb-8 border-b-2 border-gray-700 pb-4 uppercase">1. System</h2>
                 <div class="space-y-8">
@@ -139,21 +119,23 @@
                 <h2 class="text-2xl font-black text-white mb-8 border-b-2 border-gray-700 pb-4 uppercase">2. Resistances</h2>
                 <div class="space-y-8">
                     <div>
-                        <label>R<sub>θJC</sub> [K/W]</label>
+                        <label>R<sub>θJC</sub> (Junc-to-Case) [K/W]</label>
                         <input type="number" id="r_jc" value="0.19" step="0.01" oninput="calculate()">
                     </div>
+                    
                     <div id="sa_container">
-                        <label>R<sub>θSA</sub> [K/W]</label>
+                        <label>R<sub>θSA</sub> (Sink-to-Air) [K/W]</label>
                         <input type="number" id="r_sa" value="0.5" step="0.01" oninput="calculate()">
                     </div>
+
                     <div class="pt-8 border-t-2 border-gray-700">
-                        <label class="text-white text-xl">Reference Temp [°C]</label>
+                        <label class="text-white text-xl">Reference Temperature [°C]</label>
                         <div id="temp_ta_box">
-                            <label class="normal-case text-blue-400">Ambient (T<sub>A</sub>)</label>
+                            <label class="normal-case text-blue-400">Ambient Air (T<sub>A</sub>)</label>
                             <input type="number" id="t_ambient" value="50" oninput="calculate()">
                         </div>
                         <div id="temp_ts_box" class="hidden">
-                            <label class="normal-case text-yellow-400">Plate (T<sub>S</sub>)</label>
+                            <label class="normal-case text-yellow-400">Plate Surface (T<sub>S</sub>)</label>
                             <input type="number" id="t_surface" value="75" oninput="calculate()">
                         </div>
                     </div>
@@ -163,22 +145,31 @@
             <div class="card p-8 bg-black border-blue-500/30 flex flex-col justify-between">
                 <div>
                     <h2 class="text-2xl font-black text-green-500 mb-8 border-b-2 border-green-900/30 pb-4 uppercase">3. Live Analysis</h2>
+                    
                     <div class="space-y-4 mb-8">
                         <div class="flex justify-between items-center bg-gray-900 p-5 rounded-xl border border-gray-800">
-                            <span class="text-gray-400 text-lg font-bold">R<sub>θ-TIM</sub></span>
+                            <span class="text-gray-400 text-lg font-bold">R<sub>θ-TIM</sub> [K/W]</span>
                             <span id="out-rtim" class="text-2xl font-black text-blue-400 font-mono">--</span>
                         </div>
                         <div class="flex justify-between items-center bg-gray-900 p-5 rounded-xl border border-gray-800">
-                            <span class="text-gray-400 text-lg font-bold">ΣR<sub>θ</sub> Total</span>
+                            <span class="text-gray-400 text-lg font-bold">Total ΣR<sub>θ</sub> [K/W]</span>
                             <span id="out-rtotal" class="text-2xl font-black text-blue-400 font-mono">--</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="text-center py-6">
-                    <div id="status-badge" class="inline-block px-6 py-2 rounded-xl text-sm font-black uppercase mb-6 tracking-widest border-2">STABLE</div>
+                    <div id="status-badge" class="inline-block px-6 py-2 rounded-xl text-sm font-black uppercase mb-6 tracking-widest border-2">
+                        STABLE
+                    </div>
                     <span class="text-xl text-blue-400 uppercase tracking-[0.3em] font-black block mb-2">Junction T<sub>J</sub></span>
                     <span id="out-tj" class="text-9xl font-black text-white tracking-tighter block leading-none">--</span>
+                    
                     <div class="mt-10">
+                        <div class="flex justify-between text-sm font-black text-gray-500 mb-2 uppercase">
+                            <span>Cold</span>
+                            <span>Limit</span>
+                        </div>
                         <div class="h-6 w-full bg-gray-800 rounded-full overflow-hidden p-1 border border-gray-700">
                             <div id="temp-bar" class="h-full bg-blue-500 rounded-full transition-all duration-700" style="width: 0%"></div>
                         </div>
@@ -219,17 +210,32 @@
             const mode = document.getElementById('calc_mode').value;
             const P = parseFloat(document.getElementById('power').value) || 0;
             const TjMax = parseFloat(document.getElementById('tj_max').value) || 125;
+            
             const Rjc = parseFloat(document.getElementById('r_jc').value) || 0;
             const Rsa = parseFloat(document.getElementById('r_sa').value) || 0;
+            
             const thick = parseFloat(document.getElementById('thickness').value) || 0;
             const k = parseFloat(document.getElementById('k_val').value) || 0;
             const area = parseFloat(document.getElementById('area').value) || 0;
 
-            let Rtim = (k > 0 && area > 0) ? (thick / 1000) / (k * (area / 1000000)) : 0;
-            let totalR = (mode === 'ambient') ? (Rjc + Rtim + Rsa) : (Rjc + Rtim);
-            let refTemp = (mode === 'ambient') ? (parseFloat(document.getElementById('t_ambient').value) || 0) : (parseFloat(document.getElementById('t_surface').value) || 0);
+            let Rtim = 0;
+            if (k > 0 && area > 0) {
+                Rtim = (thick / 1000) / (k * (area / 1000000));
+            }
+
+            let totalR = 0;
+            let refTemp = 0;
+
+            if (mode === 'ambient') {
+                totalR = Rjc + Rtim + Rsa;
+                refTemp = parseFloat(document.getElementById('t_ambient').value) || 0;
+            } else {
+                totalR = Rjc + Rtim;
+                refTemp = parseFloat(document.getElementById('t_surface').value) || 0;
+            }
 
             const finalTj = refTemp + (P * totalR);
+
             document.getElementById('out-rtim').innerText = Rtim.toFixed(3);
             document.getElementById('out-rtotal').innerText = totalR.toFixed(3);
             document.getElementById('out-tj').innerText = finalTj.toFixed(1) + "°";
@@ -237,6 +243,7 @@
             const percentage = Math.min((finalTj / TjMax) * 100, 100);
             const bar = document.getElementById('temp-bar');
             const badge = document.getElementById('status-badge');
+
             bar.style.width = percentage + "%";
             
             if (finalTj > TjMax) {
@@ -253,7 +260,10 @@
                 badge.className = "inline-block px-6 py-2 rounded-xl text-sm font-black uppercase mb-6 tracking-widest border-2 bg-green-500/20 text-green-500 border-green-500";
             }
         }
-        window.onload = toggleMode;
+
+        window.onload = () => {
+            toggleMode();
+        };
     </script>
 </body>
 </html>
